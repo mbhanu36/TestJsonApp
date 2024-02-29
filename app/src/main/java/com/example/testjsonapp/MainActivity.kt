@@ -131,6 +131,8 @@ fun MyScreen(context: Context) {
             //Button to Switch to DataFromJson Activity
             Button(
                 onClick = {
+//                    val intent = Intent(context, DataFromJson::class.java)
+//                    context.startActivity(intent)
                     showJsonData = !showJsonData
                 },
                 modifier = Modifier.padding(start = 8.dp, top = 16.dp)
