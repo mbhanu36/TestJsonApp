@@ -133,6 +133,14 @@ fun MyScreen(context: Context) {
                 onClick = {
 //                    val intent = Intent(context, DataFromJson::class.java)
 //                    context.startActivity(intent)
+
+                    /*
+                    Upar wale 2 commented lines dusri Activity(DataFromJson)
+                    ko link krne ke liye hai, but wo krne pe Application
+                    crash ho rahi hai that's why niche ek function call krke
+                    LazyColumn display krwa de rha hu "Load JSON Data" k naam pe...
+                    */
+                    
                     showJsonData = !showJsonData
                 },
                 modifier = Modifier.padding(start = 8.dp, top = 16.dp)
