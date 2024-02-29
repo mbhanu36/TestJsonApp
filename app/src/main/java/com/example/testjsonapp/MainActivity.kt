@@ -4,6 +4,7 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -85,6 +86,7 @@ data class FormData(val name: String, val email: String)
 fun MyScreen(context: Context) {
     var formData by remember { mutableStateOf(FormData("", "")) }
     var entries by remember { mutableStateOf(emptyMap<String, Entry>()) }
+    var showJsonData by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -109,32 +111,52 @@ fun MyScreen(context: Context) {
                 .padding(vertical = 8.dp)
         )
 
-        // Button to submit the form and save data to a file
-        Button(
-            onClick = {
-                //To store the formdata in the entries
-                entries = entries + (System.currentTimeMillis().toString() to Entry(formData.email, formData.name))
-                // Save form data as JSON to a file
-                saveJsonToFile(context, formData)
+        Row {
+            // Button to submit the form and save data to a file
+            Button(
+                onClick = {
+                    //To store the formdata in the entries
+                    entries = entries + (System.currentTimeMillis().toString() to Entry(
+                        formData.email,
+                        formData.name
+                    ))
+                    // Save form data as JSON to a file
+                    saveJsonToFile(context, formData)
 
-            },
-            modifier = Modifier.padding(top = 16.dp)
-        ) {
-            Text("Submit")
+                },
+                modifier = Modifier.padding(top = 16.dp)
+            ) {
+                Text("Submit")
+            }
+            //Button to Switch to DataFromJson Activity
+            Button(
+                onClick = {
+                    showJsonData = !showJsonData
+                },
+                modifier = Modifier.padding(start = 8.dp, top = 16.dp)
+            ) {
+                Text("Load JSON Data")
+            }
         }
-        
-        //LazyList to show the entries
-        LazyColumn {
-            items(entries.entries.toList()) { (_, entry) ->
-                Column {
-                    Text("Email: ${entry.email}")
-                    Text("Name: ${entry.name}")
-                    Spacer(modifier = Modifier.height(16.dp)) // Add spacing between entries
-                }
+
+        if (showJsonData) {
+            DisplayJsonEntries(entries = entries)
+        }
+    }
+}
+
+// New composable to display JSON entries
+@Composable
+fun DisplayJsonEntries(entries: Map<String, Entry>) {
+    LazyColumn {
+        items(entries.entries.toList()) { (_, entry) ->
+            Column {
+                Text("Email: ${entry.email}")
+                Text("Name: ${entry.name}")
+                Spacer(modifier = Modifier.height(16.dp)) // Add spacing between entries
             }
         }
     }
-    //DisplayJsonEntries()
 }
 
 
@@ -159,36 +181,3 @@ fun saveJsonToFile(context: Context, formData: FormData) {
         Log.e("SaveJsonToFile", "Error saving JSON to file: ${e.message}")
     }
 }
-
-data class Entry(val email: String, val name: String)
-
-//Creating the LazyColumn from the data got from JSON
-@Composable
-fun EntryText(entries: Map<String, Entry>) {
-    LazyColumn {
-        items(entries.entries.toList()) { (_, entry) ->
-            Column {
-                Text("Email: ${entry.email}")
-                Text("Name: ${entry.name}")
-                Spacer(modifier = Modifier.height(16.dp)) // Add spacing between entries
-            }
-        }
-    }
-}
-
-//Function to make Extract data from JSON file
-@Composable
-fun DisplayJsonEntries() {
-    val gson = Gson()
-
-    // Replace "path/to/your/file.json" with the actual path to your JSON file
-    val jsonFile = File("/storage/emulated/0/Android/data/com.example.testjsonapp/files/form_data.json")
-    val jsonString = jsonFile.readText()
-
-    // Parse JSON string to a map where keys are entry IDs and values are Entry objects
-    val entries: Map<String, Entry> = gson.fromJson(jsonString, object : TypeToken<Map<String, Entry>>() {}.type)
-
-    // Display the content of each entry using EntryText composable
-    EntryText(entries = entries)
-}
-
